@@ -15,7 +15,7 @@ This utility is specifically designed for this task. For more advanced renaming 
 ## Installation
 Install the latest version of Python (3+). This utility was developed and tested using Python 3.12.6.   
 Install tkfilebrowser via your terminal:   
-pip install tkfilebrowser
+```pip install tkfilebrowser```
 
 ## How Does It Work?
 This utility features a simple GUI for navigating its functions and a console for logging information and errors.   
@@ -53,7 +53,7 @@ Some error control exists to prevent renaming when there are duplicates, but cer
 
 ### About Me
 I'm a Freelance Software Engineer and Developer.
-In my free time,create applications, fixes, patches, and mods for gamesenjoy, occasionallypublish them.
+In my free time, I create applications, fixes, patches, and mods for games I enjoy, occasionally I publish them.
 
 ### Useful Links
 Check out my steam mods here:   
