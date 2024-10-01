@@ -1,53 +1,61 @@
-# bulk_copy-rename_utility
-This repository is for an utility I'm developing to ease many operation I have to do during my work and hobbies.
-It was tested using Python 3.12.6
-This is MIT licensed.
+# Bulk Copy-Rename Utility
+This repository is for a utility I'm developing to simplify many operations I frequently perform during work and hobbies.
+It was tested using Python 3.12.6 and is MIT licensed.
 
-## What Is It
-bulk_copy-rename_utility main purpose is to ease the process of renaming a big number of items (files/folders) using already existing names from other items. 
-The total number of items from which you copy the names should be the same number of the target ones.
-Keeping the same files/folders ratio it's not needed: 2 files + 3 folders (= 5 items) can freely rename any ratio of files/folders if the total it's still 5.
+## What Is It?
+The main purpose of Bulk Copy-Rename Utility is to simplify the process of renaming a large number of items (files/folders) by using names from existing items.   
+The total number of items from which you copy the names should match the number of target items.   
+The same file/folder ratio does not need to be maintained: for example, 2 files and 3 folders (5 items) can be used to rename any combination of 5 files or folders.   
 
-This utility doesn't provide much more than that, for almost all the other rename operations you can think of there's the powerful "Bulk Rename Utility" free to download (for personal use only).
+This utility is specifically designed for this task. For more advanced renaming operations, the powerful "Bulk Rename Utility" (free for personal use) is recommended.
 
 ## Installation
-Install the latest version of Python (3+), this utility was developed and tested using Python 3.12.6.
-Install tkfilebrowser from your terminal		pip install tkfilebrowser
+Install the latest version of Python (3+). This utility was developed and tested using Python 3.12.6.   
+Install tkfilebrowser via your terminal:   
+pip install tkfilebrowser
 
-## How Does It Work
-This utility has a simple GUI to navigate the functions and a console to log info/errors.
-You can choose any file and folder for the input names and any file or folder as target item to rename.
-The Rename button is grayed out until you have the same number of input names and target items.
-The Rename button clears the targets only if the operation is successful, the input names are not cleared by default, you have to do so manually with the related button.
+## How Does It Work?
+This utility features a simple GUI for navigating its functions and a console for logging information and errors.   
+You can select any files or folders as the input names and any files or folders as the target items to be renamed.   
+The "Rename" button remains disabled until you have the same number of input names and target items.   
+The "Rename" button only clears the target items after a successful operation. Input names are not cleared by default and can be manually cleared using the corresponding button.
 
-##Known Issues
-There is some form of error control to prevent the execution of the rename function in presence of duplicates but some cases just catch the exception thrown by the os.
-Nothin
+## Use cases
+Example 1:   
+You have a large number of correctly named folders, but you've worked on older, wrongly named folders.   
+Now, you have outdated content in correctly named folders and updated content in wrongly named folders.   
+Instead of renaming the folders one by one, you can use this utility to rename them in bulk, using the correct folder names as input and the folders to be renamed as the target folders.
 
+Example 2:   
+You have a large number of correctly named files, but you've worked on older, wrongly named files.   
+Now, you have correctly named files with outdated data and wrongly named files with updated data.   
+Instead of renaming the files one by one, you can use this utility to rename them in bulk, using the correct file names as input and the files to be renamed as targets.
 
-## Examples
-Example 1:
-You have a large number of correctly named folders but you worked on older/wongly named folders and now you have old contents in correctly named folders and updated contents in wrongly named folders.
-Instead of renaming the folders one by one, you can use this utility to rename in bulk using the correct folders names as input and the folders to rename as target folders.
-Example 2:
-You have a large number of correctly named files but you worked on older/wongly named files and now you have correctly named files with outated data and updated data in wrongly named files.
-Instead of renaming the files one by one, you can use this utility to rename in bulk using the correct files names as input and the files to rename as targets.
-Example 3 (general case):
-You have a large number of files/folders and you want to rename them with the same names of some others files/folders or viceversa, for whatever reasons.
-With this utility you can do this.
+Example 3 (General Case):   
+You have a large number of files/folders and want to rename them using the names of other files/folders, or vice versa, for any reason.   
+With this utility, you can easily do that.
 
-##TO DO
--Rename even when the number of input names it's less than the number of target items, cycling the input list when it reach the end (need handling the duplicates, i.e. chechinkg the targets paths with the same assigned name are different)
--Add a json to customize the experience without touching the code, i.e. to edit some elements (GUI or functions) at runtime/terminal
--Improve the GUI, for example providing a continuos window showing the input names and target items selected
+## Known Issues
+Some error control exists to prevent renaming when there are duplicates, but certain cases are only caught by exceptions thrown by the OS.
+
+## To-Do List
+- Better duplicates management: 
+  - SAFE MODE -> check every target path and abort the renaming process entirely if a target path has any of either the target names or input names
+  - BALANCED -> check the target path only for duplicates of the input name used for renaming that specific target, preventing any operation
+  - FAST MODE -> similar to balanced mode but when a duplicate is found the renaming process is not aborted entirely, only the duplicate target is skipped
+- Add input CYCLING:  when the number of input names is fewer than the number of target items, cycle through the input list when it reaches the end (with handling for duplicates, such as checking that target paths with the same assigned name are different)
+- Add a JSON configuration to customize the experience (SAFE/BALACED MODE) without modifying the code, allowing runtime/terminal editing of certain elements (GUI or functions)
+- Improve the GUI, for example by providing a continuous window that shows the selected input names and target items.
+- Possibility to remove only single input names or targets instead of clearing all those lists
 
 ### About Me
-I'm a Freelance Software Engineer and in my free time I make applications, fixes, patches and mods for games I like, sometimes I publish them.
+I'm a Freelance Software Engineer and Developer.
+In my free time, I create applications, fixes, patches, and mods for games I enjoy, occasionally I publish them.
 
 ### Useful Links
-Check out my steam mods here:
-https://steamcommunity.com/profiles/76561198004659076/myworkshopfiles/?appid=211820](https://steamcommunity.com/profiles/76561198004659076/myworkshopfiles/
+Check out my steam mods here:   
+https://steamcommunity.com/profiles/76561198004659076/myworkshopfiles
 
 ### Donations
-If you have requests for specific content or you simply want to support me:
+If you have requests for specific content or you simply want to support me:   
 https://ko-fi.com/nephi90
