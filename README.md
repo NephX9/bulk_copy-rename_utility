@@ -1,5 +1,4 @@
-Bulk Copy-Rename Utility   
-Copyright (C) 2024 NephX9 (original author)   
+Bulk Copy-Rename Utility   Copyright (C)   2024   NephX9 (original author)   
 Licensed under the GNU General Public License, Version 3 (GPL-3.0)
 
 # Bulk Copy-Rename Utility
