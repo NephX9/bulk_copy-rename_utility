@@ -1,6 +1,9 @@
+Bulk Copy-Rename Utility  Copyright (C) 2024 NephX9 (original author)
+Licensed under the GNU General Public License, Version 3 (GPL-3.0)
+
 # Bulk Copy-Rename Utility
 This repository is for a utility I'm developing to simplify many operations I frequently perform during work and hobbies.
-It was tested using Python 3.12.6 and is MIT licensed.
+It was tested using Python 3.12.6
 
 ## What Is It?
 The main purpose of Bulk Copy-Rename Utility is to simplify the process of renaming a large number of items (files/folders) by using names from existing items.   
@@ -54,8 +57,8 @@ In my free time, I create applications, fixes, patches, and mods for games I enj
 
 ### Useful Links
 Check out my steam mods here:   
-https://steamcommunity.com/profiles/76561198004659076/myworkshopfiles
+[My Steam Workshop](https://steamcommunity.com/profiles/76561198004659076/myworkshopfiles)
 
 ### Donations
 If you have requests for specific content or you simply want to support me:   
-https://ko-fi.com/nephi90
+[My Ko-fi](https://ko-fi.com/nephi90)
