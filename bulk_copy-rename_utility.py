@@ -4,6 +4,14 @@ import os
 import shutil
 from tkfilebrowser import askopendirnames, askopenfilenames
 
+def display_notice():
+    print("Bulk Copy-Rename Utility  Copyright (C) 2024  NephX9 (original author)")
+    print("Licensed under the GNU General Public License, Version 3 (GPL-3.0)\n")
+    print("This program comes with ABSOLUTELY NO WARRANTY.")
+    print("This is free software, and you are welcome to redistribute it under certain conditions.")
+    print("Please see the LICENSE.md file for details.\n\n")
+    print("Program ready, use the GUI to proceed.\n")
+
 class BatchRenameApp:
     def __init__(self, master):
         self.master = master
@@ -167,7 +175,8 @@ class BatchRenameApp:
         self.update_rename_button_state()
 
     def clear_console(self):
-        print("\n" * 100)  # Clear console output by printing new lines
+        print("\n" * 60)  # Clear console output by printing new lines
+        display_notice()
 
     def close_sub_dialogs(self):
         for widget in self.master.winfo_children():
@@ -214,8 +223,12 @@ class BatchRenameApp:
         else:
             # If not valid, return the default path (user's desktop)
             return os.path.expanduser("~/Desktop")
+            
+
+
 
 if __name__ == '__main__':
     root = tk.Tk()
+    display_notice()
     app = BatchRenameApp(root)
     root.mainloop()
