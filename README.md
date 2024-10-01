@@ -2,7 +2,7 @@ Bulk Copy-Rename Utility   Copyright (C)   2024   NephX9 (original author)
 Licensed under the GNU General Public License, Version 3 (GPL-3.0)
 
 # Bulk Copy-Rename Utility
-This repository is for a utility I'm developing to simplify many operations I frequently perform during work and hobbies.
+Bulk Copy-Rename Utility is a tool I'm developing to simplify many operations I frequently perform.   
 It was tested using Python 3.12.6
 
 ## What Is It?
@@ -53,7 +53,7 @@ Some error control exists to prevent renaming when there are duplicates, but cer
 
 ### About Me
 I'm a Freelance Software Engineer and Developer.
-In my free time, I create applications, fixes, patches, and mods for games I enjoy, occasionally I publish them.
+In my free time,create applications, fixes, patches, and mods for gamesenjoy, occasionallypublish them.
 
 ### Useful Links
 Check out my steam mods here:   
