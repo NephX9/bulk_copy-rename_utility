@@ -25,8 +25,8 @@ class BatchRenameApp:
 
         self.input_items = []
         self.target_items = []
-        self.default_path = os.path.expanduser("~/Desktop")  # Default to user home directory
-        self.last_accessed_path = self.default_path  # Initial last accessed path is user home
+        self.default_path = os.path.expanduser("~/Desktop")  # Default to user desktop
+        self.last_accessed_path = self.default_path  # Initial last accessed path
 
         # Main Buttons
         self.select_input_button = tk.Button(master, text="Select Input", command=self.open_input_dialog)
@@ -106,8 +106,11 @@ class BatchRenameApp:
                                      initialdir=self.get_initial_directory())
             if files:
                 for file in files:
-                    self.input_items.append(file)
-                    print(f"'{os.path.basename(file)}' file added as input")
+                    if file in self.input_items or file in self.target_items:
+                        print(f"Cannot add '{os.path.basename(file)}': already selected as input or target.")
+                    else:
+                        self.input_items.append(file)
+                        print(f"'{os.path.basename(file)}' file added as input")
                 self.last_accessed_path = os.path.dirname(files[0])  # Update last accessed path
             self.update_rename_button_state()
         except Exception as e:
@@ -118,8 +121,11 @@ class BatchRenameApp:
             folders = askopendirnames(title="Select Input Folders", initialdir=self.get_initial_directory())
             if folders:
                 for folder in folders:
-                    self.input_items.append(folder)
-                    print(f"'{os.path.basename(folder)}' folder added as input")
+                    if folder in self.input_items or folder in self.target_items:
+                        print(f"Cannot add '{os.path.basename(folder)}': already selected as input or target.")
+                    else:
+                        self.input_items.append(folder)
+                        print(f"'{os.path.basename(folder)}' folder added as input")
                 self.last_accessed_path = os.path.dirname(folders[0])  # Update last accessed path
             self.update_rename_button_state()
         except Exception as e:
@@ -131,8 +137,11 @@ class BatchRenameApp:
                                      initialdir=self.get_initial_directory())
             if files:
                 for file in files:
-                    self.target_items.append(file)
-                    print(f"'{os.path.basename(file)}' file added as target")
+                    if file in self.input_items or file in self.target_items:
+                        print(f"Cannot add '{os.path.basename(file)}': already selected as input or target.")
+                    else:
+                        self.target_items.append(file)
+                        print(f"'{os.path.basename(file)}' file added as target")
                 self.last_accessed_path = os.path.dirname(files[0])  # Update last accessed path
             self.update_rename_button_state()
         except Exception as e:
@@ -143,14 +152,18 @@ class BatchRenameApp:
             folders = askopendirnames(title="Select Target Folders", initialdir=self.get_initial_directory())
             if folders:
                 for folder in folders:
-                    self.target_items.append(folder)
-                    print(f"'{os.path.basename(folder)}' folder added as target")
+                    if folder in self.input_items or folder in self.target_items:
+                        print(f"Cannot add '{os.path.basename(folder)}': already selected as input or target.")
+                    else:
+                        self.target_items.append(folder)
+                        print(f"'{os.path.basename(folder)}' folder added as target")
                 self.last_accessed_path = os.path.dirname(folders[0])  # Update last accessed path
             self.update_rename_button_state()
         except Exception as e:
             print(f"Error selecting target folders: {e}")
 
     def show_selected_items(self):
+        self.close_sub_dialogs()
         if not self.input_items and not self.target_items:
             print("No items have been selected.")
             return
@@ -179,7 +192,8 @@ class BatchRenameApp:
         self.update_rename_button_state()
 
     def clear_console(self):
-        print("\n" * 60)  # Clear console output by printing new lines
+        self.close_sub_dialogs()
+        print("\n" * 100)  # Clear console output by printing new lines
         display_notice()
 
     def close_sub_dialogs(self):
@@ -194,20 +208,15 @@ class BatchRenameApp:
             self.rename_button.config(state=tk.DISABLED)
 
     def rename_items(self):
+        self.close_sub_dialogs()
         if len(self.input_items) != len(self.target_items):
             print("The number of input and target items must be the same!")
             return
 
-        for input_item in self.input_items:
-            new_name = os.path.basename(input_item)
-            if any(os.path.basename(target_item) == new_name for target_item in self.target_items):
-                print(f"A file or folder named '{new_name}' already exists in the target directory!")
-                return
-
         for input_item, target_item in zip(self.input_items, self.target_items):
-            new_name = os.path.basename(input_item)
-            target_dir = os.path.dirname(target_item)
-            new_target_path = os.path.join(target_dir, new_name)
+            new_name = os.path.basename(input_item)  # Get the name from input item
+            target_dir = os.path.dirname(target_item)  # Keep the target's directory path
+            new_target_path = os.path.join(target_dir, new_name)  # Rename target item
 
             try:
                 # Rename the target item to match the input item
@@ -228,8 +237,6 @@ class BatchRenameApp:
             # If not valid, return the default path (user's desktop)
             return os.path.expanduser("~/Desktop")
             
-
-
 
 if __name__ == '__main__':
     root = tk.Tk()
