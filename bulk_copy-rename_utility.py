@@ -97,15 +97,15 @@ class BatchRenameApp:
         dialog.geometry("300x200")
         self.center_window(dialog)
         dialog.geometry("+{}+{}".format(self.master.winfo_x(), self.master.winfo_y() + 200))
+        
+        clear_both_button = tk.Button(dialog, text="Clear All Items Selected", command=self.clear_both_selection)
+        clear_both_button.pack(pady=10)
 
-        clear_input_button = tk.Button(dialog, text="Clear Input Selection", command=self.clear_input_selection)
+        clear_input_button = tk.Button(dialog, text="Clear Input List", command=self.clear_input_selection)
         clear_input_button.pack(pady=10)
 
-        clear_target_button = tk.Button(dialog, text="Clear Target Selection", command=self.clear_target_selection)
+        clear_target_button = tk.Button(dialog, text="Clear Target List", command=self.clear_target_selection)
         clear_target_button.pack(pady=10)
-
-        clear_both_button = tk.Button(dialog, text="Clear Both Selections", command=self.clear_both_selection)
-        clear_both_button.pack(pady=10)
 
     def open_special_function_dialog(self):
         self.close_sub_dialogs()
@@ -288,7 +288,7 @@ class BatchRenameApp:
     #PLACEHOLDER FUNCTION TO PREVENT DUPLICATES IN A TARGET DIRECTORY
     #Takes a single input name and a single target (path)
     #Returns false if any file/folder in the target directory has the same name as the input, return true otherwise
-    def validate_target_dir(self)
+    def validate_target_dir(self):
         print("PLACEHOLDER FUNCTION CALLED")
         validated = False        
         #Logic to check dir -- START
