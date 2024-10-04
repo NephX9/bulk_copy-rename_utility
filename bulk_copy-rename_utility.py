@@ -3,7 +3,6 @@
 
 
 import tkinter as tk
-from tkinter import messagebox
 import os
 import shutil
 from tkfilebrowser import askopendirnames, askopenfilenames
@@ -28,6 +27,10 @@ class BatchRenameApp:
         self.default_path = os.path.expanduser("~/Desktop")  # Default to user desktop
         self.last_accessed_path = self.default_path  # Initial last accessed path
 
+        # Custom function related attributes
+        self.special_input_list = []  # Holds special input folder paths
+        self.special_output_file = None  # Holds the special output filename
+
         # Main Buttons
         self.select_input_button = tk.Button(master, text="Select Input", command=self.open_input_dialog)
         self.select_input_button.pack(pady=10)
@@ -39,6 +42,7 @@ class BatchRenameApp:
         self.show_selected_button.pack(pady=10)
 
         self.clear_selection_button = tk.Button(master, text="Clear Selection", command=self.open_clear_dialog)
+        #only clear all at once?
         self.clear_selection_button.pack(pady=10)
 
         self.clear_console_button = tk.Button(master, text="Clear Console", command=self.clear_console)
@@ -46,6 +50,9 @@ class BatchRenameApp:
 
         self.rename_button = tk.Button(master, text="Rename", command=self.rename_items, state=tk.DISABLED)
         self.rename_button.pack(pady=10)
+        
+        self.special_function_button = tk.Button(master, text="SPECIAL FUNCTION", command=self.open_special_function_dialog)
+        self.special_function_button.pack(pady=10)
 
     def center_window(self, window):
         window.update_idletasks()
@@ -89,7 +96,7 @@ class BatchRenameApp:
         dialog.title("Clear Selection")
         dialog.geometry("300x200")
         self.center_window(dialog)
-        dialog.geometry("+{}+{}".format(self.master.winfo_x(), self.master.winfo_y() + 300))
+        dialog.geometry("+{}+{}".format(self.master.winfo_x(), self.master.winfo_y() + 200))
 
         clear_input_button = tk.Button(dialog, text="Clear Input Selection", command=self.clear_input_selection)
         clear_input_button.pack(pady=10)
@@ -99,6 +106,75 @@ class BatchRenameApp:
 
         clear_both_button = tk.Button(dialog, text="Clear Both Selections", command=self.clear_both_selection)
         clear_both_button.pack(pady=10)
+
+    def open_special_function_dialog(self):
+        self.close_sub_dialogs()
+        dialog = tk.Toplevel(self.master)
+        dialog.title("Custom Function")
+        dialog.geometry("300x300")
+        self.center_window(dialog)
+        dialog.geometry("+{}+{}".format(self.master.winfo_x(), self.master.winfo_y() + 30))
+
+        special_input_button = tk.Button(dialog, text="SPECIAL INPUT", command=self.special_input_dialog)
+        special_input_button.pack(pady=10)
+
+        special_output_button = tk.Button(dialog, text="SPECIAL OUTPUT", command=self.special_output_dialog)
+        special_output_button.pack(pady=10)
+
+        special_data_button = tk.Button(dialog, text="SPECIAL DATA", command=self.special_data)
+        special_data_button.pack(pady=10)
+        
+        special_clear_data_button = tk.Button(dialog, text="SPECIAL CLEAR DATA", command=self.special_clear_data)
+        special_clear_data_button.pack(pady=10)
+
+        special_run_button = tk.Button(dialog, text="SPECIAL RUN", command=self.special_run)
+        special_run_button.pack(pady=10)
+
+    def special_input_dialog(self):
+        folders = askopendirnames(title="Select Folders", initialdir=self.get_initial_directory())
+        if folders:
+            self.special_input_list.extend(folders)  # Add folders to the special input list
+        for folder in self.special_input_list:
+            print(f"Adding {folder}")
+
+    def special_output_dialog(self):
+        file = askopenfilenames(title="Select Output File", filetypes=[("All files", "*.*")], initialdir=self.get_initial_directory())
+        if file:
+            self.special_output_file = os.path.basename(file[0])  # Store only the filename
+            print(f"Selected special output file: {self.special_output_file}")
+
+    def special_data(self):
+        if self.special_input_list:
+            print("SPECIAL INPUT paths:")
+            for folder in self.special_input_list:
+                print(folder)
+        else:
+            print("SPECIAL INPUT paths: NONE SELECTED YET")
+        if self.special_output_file:
+            print(f"SPECIAL OUTPUT file: {self.special_output_file}")
+        else:
+            print(f"SPECIAL OUTPUT file: NOT SELECTED YET")
+
+    def special_clear_data(self):
+        if self.special_input_list:
+            self.special_input_list.clear()
+        if self.special_output_file:
+            self.special_output_file=""
+        print("Special data have been cleared.")
+
+    def special_run(self):
+        if not self.special_input_list or not self.special_output_file:
+            print("No special input paths or special output file specified.")
+            return
+
+        for folder in self.special_input_list:
+            for root, dirs, files in os.walk(folder):
+                if self.special_output_file in files:
+                    found_file_path = os.path.join(root, self.special_output_file)
+                    path_parts = found_file_path.split(os.sep)[-6:]  # Last 6 steps of the path
+                    with open(found_file_path, 'a') as f:
+                        f.write("\n" + os.sep.join(path_parts))  # Append last 6 steps of the path to the file
+                    print(f"Updated '{found_file_path}' with path: {os.sep.join(path_parts)}")
 
     def select_input_files(self):
         try:
@@ -201,11 +277,27 @@ class BatchRenameApp:
             if isinstance(widget, tk.Toplevel):
                 widget.destroy()
 
+    #When not in SAFE MODE allow for len(self.input_items) < len(self.target_items)  ;   when it is so, cycle self.input_items list when "assigning" names on targets
+    #Never allow for len(self.input_items)=1, use the application suggested on my github for that
     def update_rename_button_state(self):
         if len(self.input_items) == len(self.target_items) and self.input_items:
             self.rename_button.config(state=tk.NORMAL)
         else:
             self.rename_button.config(state=tk.DISABLED)
+
+    #PLACEHOLDER FUNCTION TO PREVENT DUPLICATES IN A TARGET DIRECTORY
+    #Takes a single input name and a single target (path)
+    #Returns false if any file/folder in the target directory has the same name as the input, return true otherwise
+    def validate_target_dir(self)
+        print("PLACEHOLDER FUNCTION CALLED")
+        validated = False        
+        #Logic to check dir -- START
+        validated = True 
+        #Logic to check dir -- END
+        if not validated:
+            print("CHECK FAILED:") #move and improve this message to the caller when implemented
+        
+        return validated        
 
     def rename_items(self):
         self.close_sub_dialogs()
@@ -236,7 +328,7 @@ class BatchRenameApp:
         else:
             # If not valid, return the default path (user's desktop)
             return os.path.expanduser("~/Desktop")
-            
+
 
 if __name__ == '__main__':
     root = tk.Tk()
