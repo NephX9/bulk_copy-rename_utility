@@ -22,10 +22,13 @@ class BatchRenameApp:
         self.master.geometry("300x330")
         self.center_window(self.master)
 
-        self.input_items = []
-        self.target_items = []
+        self.input_items = [] # list of file(s)/folder(s) names
+        self.target_items = [] # list of file(s)/folder(s) full paths
+        self.app_mode = 1 # Default = 1 (BALANCED) ; Other modes: 0 = SAFE;   1 = BALANCE;    2 = FAST
         self.default_path = os.path.expanduser("~/Desktop")  # Default to user desktop
-        self.last_accessed_path = self.default_path  # Initial last accessed path
+        #self.last_accessed_path = self.default_path  # Initial last accessed path
+        self.last_inputs_accessed_path = self.default_path  # Initial last accessed path for inputs
+        self.last_targets_accessed_path = self.default_path  # Initial last accessed path for targets
 
         # Custom function related attributes
         self.special_input_list = []  # Holds special input folder paths
@@ -70,10 +73,10 @@ class BatchRenameApp:
         self.center_window(dialog)
         dialog.geometry("+{}+{}".format(self.master.winfo_x() - 250, self.master.winfo_y() + 50))  # Shift to the left        
 
-        select_input_files_button = tk.Button(dialog, text="Select Input Files", command=self.select_input_files)
+        select_input_files_button = tk.Button(dialog, text="Select Input File(s)", command=lambda: self.select_input_items(0))
         select_input_files_button.pack(pady=10)
 
-        select_input_folders_button = tk.Button(dialog, text="Select Input Folders", command=self.select_input_folders)
+        select_input_folders_button = tk.Button(dialog, text="Select Input Folder(s)", command=lambda: self.select_input_items(1))
         select_input_folders_button.pack(pady=10)
     
     def open_target_dialog(self):
@@ -84,10 +87,10 @@ class BatchRenameApp:
         self.center_window(dialog)
         dialog.geometry("+{}+{}".format(self.master.winfo_x() + 250, self.master.winfo_y() + 50))  # Shift to the right        
 
-        select_target_files_button = tk.Button(dialog, text="Select Target Files", command=self.select_target_files)
+        select_target_files_button = tk.Button(dialog, text="Select Target File(s)", command=lambda: self.select_target_items(0))
         select_target_files_button.pack(pady=10)
 
-        select_target_folders_button = tk.Button(dialog, text="Select Target Folders", command=self.select_target_folders)
+        select_target_folders_button = tk.Button(dialog, text="Select Target Folder(s)", command=lambda: self.select_target_items(1))
         select_target_folders_button.pack(pady=10)
     
     def open_clear_dialog(self):
@@ -136,7 +139,7 @@ class BatchRenameApp:
             folders = askopendirnames(title="Select Folders", initialdir=self.get_initial_directory())
             if folders:
                 for folder in folders:
-                    if folder in self.special_input_list:
+                    if folder in self.special_input_list:                        
                         print(f"\nSPECIAL INPUT SELECTION ABORTED, Cannot Add: '{os.path.basename(folder)}' ,Path already present\n")
                         return
                 self.special_input_list.extend(folders)  # Add folders to the special input list            
@@ -198,13 +201,14 @@ class BatchRenameApp:
         print("SPECIAL RUN terminated, clearing special data..")
         self.special_clear_data()
     
+    '''
     def select_input_files(self):
         try:
             files = askopenfilenames(title="Select Input Files", filetypes=[("All files", "*.*")],
                                      initialdir=self.get_initial_directory())
             if files:
                 for file in files:
-                    if file in self.input_items or file in self.target_items:
+                    if file in self.input_items or file in :
                         print(f"\nINPUT SELECTION ABORTED, Cannot Add: '{os.path.basename(file)}' name already present.")
                     else:
                         self.input_items.append(file)
@@ -213,7 +217,7 @@ class BatchRenameApp:
             self.update_rename_button_state()
         except Exception as e:
             print(f"Error selecting input files: {e}")
-    
+            
     def select_input_folders(self):
         try:
             folders = askopendirnames(title="Select Input Folders", initialdir=self.get_initial_directory())
@@ -228,7 +232,50 @@ class BatchRenameApp:
             self.update_rename_button_state()
         except Exception as e:
             print(f"Error selecting input folders: {e}")
+    '''
     
+    def select_input_items(self, item_type):
+        is_io_type = 0 # 0 here is for inputs, 1 is for outputs
+        try:
+            item_type_name = ""
+            if item_type == 0:
+                items = askopenfilenames(title="Select Input File(s)", filetypes=[("All files", "*.*")],
+                                     initialdir=self.get_initial_directory(is_io_type)) # the 
+                item_type_name = "file"
+            elif item_type == 1:
+                items = askopendirnames(title="Select Input Folder(s)", initialdir=self.get_initial_directory(is_io_type))
+                item_type_name = "folder"
+            else:
+                raise ValueError("CUSTOM MESSAGE: Unexpected 'item_type' value, it can only be 0 (File) or 1 (Folder).")
+            valid = True
+            if items and item[0]:
+                self.last_inputs_accessed_path = os.path.dirname(item[0])  # Update last accessed path during input(s) selection
+                for item in items:
+                    if os.path.basename(item) in self.input_items:
+                        valid = False
+                        print(f"\nINPUT SELECTION ABORTED: Cannot add '{os.path.basename(item)}' {item_type_name}, name already present in input list.")
+                        break
+                    else:
+                        for target_item in self.target_items:
+                            if os.path.basename(item) == os.path.basename(target_item):
+                                valid = False
+                                print(f"\nINPUT SELECTION ABORTED: Cannot add '{os.path.basename(item)}' {item_type_name}, name already present in target list.")
+                                break
+                            elif self.exists_in_path(os.path.basename(item), os.path.dirname(target_item)):
+                                valid = False
+                                print(f"\nINPUT SELECTION ABORTED: Cannot add '{os.path.basename(item)}' {item_type_name}, name already present in target path {os.path.dirname(target_item)}.")
+                                break
+                if valid == True:
+                    for item in items:
+                        self.input_items.append(os.path.basename(item))
+                        print(f"'{os.path.basename(item)}' {item_type_name} name added to input list.")
+                    self.update_rename_button_state()
+        except ValueError as ve:
+            print("ValueError exception caught during input(s) selection: \n", ve)
+        except Exception as e:
+            print("Exception caught during input(s) selection: \n", e)
+    
+    '''
     def select_target_files(self):
         try:
             files = askopenfilenames(title="Select Target Files", filetypes=[("All files", "*.*")],
@@ -259,6 +306,42 @@ class BatchRenameApp:
             self.update_rename_button_state()
         except Exception as e:
             print(f"Error selecting target folders: {e}")
+    '''
+    
+    def select_target_items(self, item_type):
+        is_io_type = 1 # 1 here is for outputs, 0 is for inputs
+        try:
+            item_type_name = ""
+            if item_type == 0:
+                items = askopenfilenames(title="Select Target File(s)", filetypes=[("All files", "*.*")],
+                                     initialdir=self.get_initial_directory(is_io_type))
+                item_type_name = "file"
+            elif item_type == 1:
+                items = askopendirnames(title="Select Target Folder(s)", initialdir=self.get_initial_directory(is_io_type))
+                item_type_name = "folder"
+            else:
+                raise ValueError("TARGET SELECTION ABORTED: Unexpected 'item_type' value, it can only be 0 (file) or 1 (folder).")
+            valid = True
+            if items and item[0]:
+                self.last_targets_accessed_path = os.path.dirname(item[0])  # Update last accessed path during target(s) selection
+                for item in items:
+                    if os.path.basename(item) in self.input_items:
+                        valid = False
+                        print(f"\nTARGET SELECTION ABORTED: Cannot add '{item}' {item_type_name}, name already present in input list.")
+                        break
+                    elif item in self.target_items:                       
+                        valid = False
+                        print(f"\nTARGET SELECTION ABORTED: Cannot add '{item}' {item_type_name}, target already selected.")
+                        break
+                if valid == True:
+                    for item in items:
+                        self.target_items.append(item)
+                        print(f"'{item}' {item_type_name} added to target list.")
+                    self.update_rename_button_state()
+        except ValueError as ve:
+            print("ValueError exception caught during target(s) selection: \n", ve)
+        except Exception as e:
+            print("Exception caught during target(s) selection: \n", e)
     
     def show_selected_items(self):
         self.close_sub_dialogs()
@@ -290,14 +373,14 @@ class BatchRenameApp:
         self.update_rename_button_state()
         self.close_sub_dialogs()
     
-    """
+    '''
     def clear_data(self):
         self.close_sub_dialogs()
         self.input_items.clear()
         self.target_items.clear()
         print("Both input and target items have been cleared.")
         self.update_rename_button_state()
-    """
+    '''
     
     def clear_console(self):
         self.close_sub_dialogs()
@@ -326,16 +409,19 @@ class BatchRenameApp:
     #PLACEHOLDER FUNCTION TO PREVENT DUPLICATES IN A TARGET DIRECTORY
     #Takes a single input name and a single target (path)
     #Returns false if any file/folder in the target directory has the same name as the input, return true otherwise
-    def validate_target_dir(self):
+    def exists_in_path(self, input_name, target_dir):
         print("PLACEHOLDER FUNCTION CALLED")
-        validated = False        
+        already_exists = False        
         #Logic to check dir -- START
-        validated = True 
+        #target_dir = os.path.dirname(target_item)
+        new_target_path = os.path.join(target_dir, input_name)
+        if os.path.exists(new_target_path):
+            already_exists = True
         #Logic to check dir -- END
-        if not validated:
-            print("CHECK FAILED:") #move and improve this message to the caller when implemented
+        if already_exists:
+            print("PATH CHECK FAILED:") #move and improve this message to the caller when implemented
         
-        return validated
+        return already_exists
     
     def rename_items(self):
         self.close_sub_dialogs()
@@ -350,22 +436,33 @@ class BatchRenameApp:
             
             try:
                 # Rename the target item to match the input item
-                os.rename(target_item, new_target_path)
-                print(f"Renamed '{target_item}' to '{new_name}'")
+                if os.path.exists(target_item):
+                    os.rename(target_item, new_target_path)
+                    print(f"Renamed '{target_item}' to '../{input_item}'")
+                else:
+                    raise FileNotFoundError(f"RENAME PROCESS ABORTED: Target '{target_item}' not found, it was renamed or (re)moved outside of the application.")
+            except FileNotFoundError as fnfe:
+                print("FileNotFoundError exception caught during renaming selection: \n", fnfe)
+                print("WARNING: some files/folders may have been renamed before the process was aborted.")
+                return
             except Exception as e:
-                print(f"Failed to rename '{target_item}' to '{new_name}': {e}")
+                print(f"Failed to rename '{target_item}' to '{input_item}': {e}")
+                print("WARNING: some files/folders may have been renamed before the process was aborted.")
                 return
         
         print("Items renamed successfully!")
         self.clear_target_selection()  # Only clear the target items after renaming
     
-    def get_initial_directory(self):
+    def get_initial_directory(self, is_io_type):
         # Check if the last accessed path is valid
-        if os.path.exists(self.last_accessed_path):
-            return self.last_accessed_path
+        if is_io_type == 0 and os.path.exists(self.last_inputs_accessed_path): # for inputs
+            return self.last_inputs_accessed_path
+        elif is_io_type == 1 and os.path.exists(self.last_targets_accessed_path): # for targets
+            return self.last_targets_accessed_path
         else:
             # If not valid, return the default path (user's desktop)
-            return os.path.expanduser("~/Desktop")
+            #return os.path.expanduser("~/Desktop")
+            return self.default_path
     
 
 if __name__ == '__main__':
