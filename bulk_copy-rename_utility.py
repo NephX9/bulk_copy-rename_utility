@@ -5,6 +5,7 @@
 import tkinter as tk
 import os
 import shutil
+from tkinter import messagebox
 from tkfilebrowser import askopendirnames, askopenfilenames
 
 def display_notice():
@@ -246,24 +247,24 @@ class BatchRenameApp:
                 items = askopendirnames(title="Select Input Folder(s)", initialdir=self.get_initial_directory(is_io_type))
                 item_type_name = "folder"
             else:
-                raise ValueError("CUSTOM MESSAGE: Unexpected 'item_type' value, it can only be 0 (File) or 1 (Folder).")
+                raise ValueError("CUSTOM EXCEPTION:\nUnexpected 'item_type' value, it can only be 0 (File) or 1 (Folder).")
             valid = True
-            if items and item[0]:
-                self.last_inputs_accessed_path = os.path.dirname(item[0])  # Update last accessed path during input(s) selection
+            if items and items[0]:
+                self.last_inputs_accessed_path = os.path.dirname(items[0])  # Update last accessed path during input(s) selection
                 for item in items:
                     if os.path.basename(item) in self.input_items:
                         valid = False
-                        print(f"\nINPUT SELECTION ABORTED: Cannot add '{os.path.basename(item)}' {item_type_name}, name already present in input list.")
+                        print(f"\nINPUT SELECTION ABORTED:\nCannot add '{os.path.basename(item)}' {item_type_name} as input, name already present in input list.")
                         break
                     else:
                         for target_item in self.target_items:
                             if os.path.basename(item) == os.path.basename(target_item):
                                 valid = False
-                                print(f"\nINPUT SELECTION ABORTED: Cannot add '{os.path.basename(item)}' {item_type_name}, name already present in target list.")
+                                print(f"\nINPUT SELECTION ABORTED:\nCannot add '{os.path.basename(item)}' {item_type_name} as input, name already present in target list.")
                                 break
                             elif self.exists_in_path(os.path.basename(item), os.path.dirname(target_item)):
                                 valid = False
-                                print(f"\nINPUT SELECTION ABORTED: Cannot add '{os.path.basename(item)}' {item_type_name}, name already present in target path {os.path.dirname(target_item)}.")
+                                print(f"\nINPUT SELECTION ABORTED:\nCannot add '{os.path.basename(item)}' {item_type_name} as input, name already present in {target_item}' target directory.")
                                 break
                 if valid == True:
                     for item in items:
@@ -320,19 +321,25 @@ class BatchRenameApp:
                 items = askopendirnames(title="Select Target Folder(s)", initialdir=self.get_initial_directory(is_io_type))
                 item_type_name = "folder"
             else:
-                raise ValueError("TARGET SELECTION ABORTED: Unexpected 'item_type' value, it can only be 0 (file) or 1 (folder).")
+                raise ValueError("TARGET SELECTION ABORTED:\nUnexpected 'item_type' value, it can only be 0 (file) or 1 (folder).")
             valid = True
-            if items and item[0]:
-                self.last_targets_accessed_path = os.path.dirname(item[0])  # Update last accessed path during target(s) selection
+            if items and items[0]:
+                self.last_targets_accessed_path = os.path.dirname(items[0])  # Update last accessed path during target(s) selection
                 for item in items:
                     if os.path.basename(item) in self.input_items:
                         valid = False
-                        print(f"\nTARGET SELECTION ABORTED: Cannot add '{item}' {item_type_name}, name already present in input list.")
+                        print(f"\nTARGET SELECTION ABORTED:\nCannot add '{item}' {item_type_name} as target, name already present in input list.")
                         break
                     elif item in self.target_items:                       
                         valid = False
-                        print(f"\nTARGET SELECTION ABORTED: Cannot add '{item}' {item_type_name}, target already selected.")
+                        print(f"\nTARGET SELECTION ABORTED:\nCannot add '{item}' {item_type_name} as target, target already selected.")
                         break
+                    else:
+                        for input_item in self.input_items:
+                            if self.exists_in_path(input_item, os.path.dirname(item)):
+                                valid = False
+                                print(f"\nTARGET SELECTION ABORTED:\nCannot add '{item}' {item_type_name} as target, the target directory already contain the name '{input_item}' from the input list.")
+                                break
                 if valid == True:
                     for item in items:
                         self.target_items.append(item)
@@ -349,7 +356,8 @@ class BatchRenameApp:
             print("No items have been selected.")
             return
 
-        input_names = "\n".join(os.path.basename(item) for item in self.input_items)
+        #input_names = "\n".join(os.path.basename(item) for item in self.input_items) # self.input_items now only cointains the input names
+        input_names = "\n".join(self.input_items) # self.input_items now only cointains the input names
         target_names = "\n".join(os.path.basename(item) for item in self.target_items)
 
         message = "Input Items:\n" + (input_names if input_names else "None") + \
@@ -401,7 +409,7 @@ class BatchRenameApp:
     #When not in SAFE MODE allow for len(self.input_items) < len(self.target_items)  ;   when it is so, cycle self.input_items list when "assigning" names on targets
     #Never allow for len(self.input_items)=1, use the application suggested on my github for that
     def update_rename_button_state(self):
-        if len(self.input_items) == len(self.target_items) and self.input_items:
+        if self.input_items and self.target_items and len(self.input_items) == len(self.target_items):
             self.rename_button.config(state=tk.NORMAL)
         else:
             self.rename_button.config(state=tk.DISABLED)
@@ -418,40 +426,80 @@ class BatchRenameApp:
         if os.path.exists(new_target_path):
             already_exists = True
         #Logic to check dir -- END
-        if already_exists:
-            print("PATH CHECK FAILED:") #move and improve this message to the caller when implemented
+        #if already_exists:
+        #    print("PATH CHECK FAILED:") #move and improve this message to the caller when implemented
         
         return already_exists
     
     def rename_items(self):
         self.close_sub_dialogs()
-        if len(self.input_items) != len(self.target_items):
-            print("The number of input and target items must be the same!")
+        if not self.input_items or not self.target_items:
+            print("You need atleast one input name and one target item to rename.")
+            return
+        elif len(self.input_items) != len(self.target_items):
+            print("The number of input names and target items must be the same.")
             return
         
         for input_item, target_item in zip(self.input_items, self.target_items):
-            new_name = os.path.basename(input_item)  # Get the name from input item
             target_dir = os.path.dirname(target_item)  # Keep the target's directory path
-            new_target_path = os.path.join(target_dir, new_name)  # Rename target item
+            new_target_path = os.path.join(target_dir, input_item)  # Rename target item            
+            try:
+                if not os.path.exists(target_item):
+                    raise FileNotFoundError(f"Target '{target_item}' not found.\nIt was renamed or (re)moved outside of the application.")
+                if self.exists_in_path(input_item, os.path.dirname(target_item)):
+                    raise Exception(f"Target '{new_target_path}' already exist.\nAnother item named '../{input_item}' was moved or renamed in the target directory outside of the application.")
+            except FileNotFoundError as nfe:
+                print(f"RENAME PROCESS ABORTED, no item was renamed:\n{nfe}")
+                messagebox.showerror("Error", "RENAME PROCESS ABORTED.\nItems changed outside of the application, check the console log for more info.")
+                return
+            except Exception as e:
+                print(f"RENAME PROCESS ABORTED, no item was renamed:\n{e}")
+                messagebox.showerror("Error", "RENAME PROCESS ABORTED.\nItems changed outside of the application, check the console log for more info.")
+                return
+        
+        '''
+        for input_item, target_item in zip(self.input_items, self.target_items):
+            # new_name = os.path.basename(input_item)  # Get the name from input item <- now input item it's already the name
+            target_dir = os.path.dirname(target_item)  # Keep the target's directory path
+            new_target_path = os.path.join(target_dir, input_item)  # Rename target item
             
             try:
-                # Rename the target item to match the input item
+                # Rename the target item to the corresponding input name
                 if os.path.exists(target_item):
+                    if self.exists_in_path(input_item, os.path.dirname(target_item)):
+                        print(f"RENAME PROCESS ABORTED: Cannot rename '{target_item}' to '../{input_item}', it was renamed or (re)moved outside of the application.")
+                        return
                     os.rename(target_item, new_target_path)
                     print(f"Renamed '{target_item}' to '../{input_item}'")
                 else:
                     raise FileNotFoundError(f"RENAME PROCESS ABORTED: Target '{target_item}' not found, it was renamed or (re)moved outside of the application.")
-            except FileNotFoundError as fnfe:
-                print("FileNotFoundError exception caught during renaming selection: \n", fnfe)
-                print("WARNING: some files/folders may have been renamed before the process was aborted.")
+            except FileNotFoundError as nfe:
+                print("FileNotFoundError exception caught during renaming selection: \n", nfe)
+                print("WARNING: some files/folders may have been renamed before the process was aborted. Check the console log for more info.")
                 return
             except Exception as e:
-                print(f"Failed to rename '{target_item}' to '{input_item}': {e}")
-                print("WARNING: some files/folders may have been renamed before the process was aborted.")
+                print(f"Failed to rename '{target_item}' to '../{input_item}': {e}")
+                print("WARNING: some files/folders may have been renamed before the process was aborted. Check the console log for more info.")
                 return
+        '''
         
-        print("Items renamed successfully!")
-        self.clear_target_selection()  # Only clear the target items after renaming
+        for input_item, target_item in zip(self.input_items, self.target_items):
+            # new_name = os.path.basename(input_item)  # Get the name from input item <- now input item it's already the name
+            target_dir = os.path.dirname(target_item)  # Keep the target's directory path
+            new_target_path = os.path.join(target_dir, input_item)  # Rename target item            
+            try:
+                # Rename the target item to the corresponding input name
+                os.rename(target_item, new_target_path)
+                print(f"Renamed '{target_item}' to '../{input_item}'")
+            except Exception as e:
+                print(f"Failed to rename '{target_item}' to '../{input_item}':\n{e}")
+                print("WARNING: some files/folders may have been renamed before the process was aborted. Check the console log for more info.")
+                messagebox.showerror("Error", "WARNING: some files/folders may have been renamed before the process was aborted. Check the console log for more info.")
+                return
+                    
+        print("All items renamed successfully!")
+        # self.clear_target_selection()   # not necessary, let the user decide
+        self.update_rename_button_state()
     
     def get_initial_directory(self, is_io_type):
         # Check if the last accessed path is valid
@@ -472,4 +520,5 @@ if __name__ == '__main__':
         app = BatchRenameApp(root)
         root.mainloop()
     except Exception as e:
-        print(f"GENERIC EXCEPTION CAUGHT: ERROR MESSAGE:\n{e}")
+        print(f"GENERIC EXCEPTION CAUGHT:\n{e}")
+        messagebox.showerror("Error", f"An unexpected error occurred: {e}")
