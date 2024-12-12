@@ -18,7 +18,7 @@ Install the latest version of Python (3+). This utility was developed and tested
 Install tkfilebrowser via your terminal:   
 ```pip install tkfilebrowser```
 <br><br>
-## How Does It Work?
+## Main function - How Does It Work?
 This utility features a simple GUI for navigating its functions and a console for logging information and errors.   
 You can select any file or folder as inputs and any file or folder as the target items to be renamed.   
 The "Rename" button stays disabled until you have the same number of inputs and targets.   
@@ -43,14 +43,21 @@ Example 3 (General Case):
 You have a large number of files/folders and want to rename them using the names of other files/folders, or vice versa, for any reason.   
 With this utility, you can easily do that.
 <br><br>
+
+## Special function - How Does It Work?
+- I/O: select some folders as inputs and a single file as output
+- For each folder selected as input, the function searches for files with the same name as the selected output file.
+- If a match is found, it writes the name of the folder that is six levels above the file (relative to its location in the directory hierarchy) into the file.
+- The intended use is to have only one file with the same name as the selected output file, 6 levels deep, in every selected input folder.
+
 ## Known Issues
 Some error control exists to prevent renaming when there are duplicates, but certain cases are only caught by exceptions thrown by the OS.
 <br><br>
 ## To-Do List
-- Better duplicates management modes (SAFE/BALANCED/FAST)
-- Add a JSON configuration to customize the experience (SAFE/BALANCED/FAST MODE) without modifying the code, allowing runtime/terminal editing of certain elements (GUI or functions)
+- Better duplicates management modes (SAFE/BALANCED/FAST).
+- Add a JSON configuration to customize the experience (SAFE/BALANCED/FAST MODE) without modifying the code, allowing runtime/terminal editing of certain elements (GUI or functions).
 - Improve the GUI, for example by providing a continuous window that shows the selected input names and target items.
-- Possibility to remove only single input names or targets instead of clearing all those lists
+- Possibility to remove only single input names or targets instead of clearing all those lists.
 <br><br>
 ### About Me
 I'm a Freelance Software Engineer and Developer.
